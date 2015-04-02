@@ -1,0 +1,76 @@
+ <toolScript name="Foam Milling" description="You'll need the dremel tool" printer="Fab@Home Model 2 Dremel">
+
+  <settings>
+    <!-- Settings that are not per-tool -->
+    <printAcceleration text="Print Acceleration" units="mm/s^2">100</printAcceleration>
+  </settings>
+
+   <!-- Expose settings for the first tool -->
+   <tool name="Foam Target" material="Foam Mill Target"  scriptVariable="target">
+     <settings>
+       <!-- this is a dumby slice hight -->
+       <sliceHeight text="Slice Height" units="mm">0.20</sliceHeight>
+     </settings>
+   </tool>
+
+   <!-- Expose settings for the second tool -->
+   <tool name="Foam" material="Foam" isSupportMaterial="true" scriptVariable="foam">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.20</sliceHeight>
+       <pathSpeed text="Path Speed" units="mm/s">30</pathSpeed>
+       <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+       <clearance text="Clearance" units="mm">10</clearance>
+       <!-- Dummy values for FabInterpreter-->
+       <pausePaths text="Pause after # Paths" units=" # of paths">300</pausePaths>
+       <depositionRate text="DepositionRate" units="mm/mm">0.0</depositionRate>
+       <pushout text="Pushout" units="seconds">0</pushout>
+       <suckback text="Suckback" units="seconds">0</suckback>
+       <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <pitch text="Pitch" units="?">0.0</pitch>
+     </settings>
+   </tool>
+
+  <printScript>
+  <![CDATA[
+
+progress.setSteps(foam.meshes.length*2 + 3);
+
+slicer.setSliceHeight(foam.sliceHeight);
+pather.set("PathWidth", foam.pathWidth);
+for (var i = 0; i < foam.meshes.length; ++i) {
+progress.log("Slicing foam Mesh");
+  slicer.doSlicing(foam.meshes[i]);
+  progress.step();
+  progress.log("Pathing foam Mesh");
+  pather.doPathing(foam.meshes[i]);
+  progress.step();
+}
+
+var foamMaterialCalibration = {
+  pathSpeed: foam.pathSpeed,
+  depositionRate: foam.depositionRate,
+  pathWidth: foam.pathWidth,
+  depositionRate: foam.depositionRate,
+  pushout: foam.pushout,
+  suckback: foam.suckback,
+  suckbackDelay: foam.suckbackDelay,
+  clearance: foam.clearance,
+  pausePaths: foam.pausePaths,
+  pitch: foam.pitch
+};
+
+
+
+
+var fabWriter = fabFile.fabAtHomeModel2Writer();
+fabWriter.addMeshes("foam", foamMaterialCalibration, foam.meshes);
+progress.step();
+
+fabWriter.sortTopDown();
+fabWriter.print();
+
+progress.finish();
+
+  ]]>
+  </printScript>
+</toolScript>

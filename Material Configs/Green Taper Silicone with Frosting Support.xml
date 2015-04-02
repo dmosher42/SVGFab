@@ -1,0 +1,106 @@
+ <toolScript name="Green Taper Silicone with Frosting Support" description="You'll need two syringes, some frosting and some silicone." printer="Fab@Home Model 2">
+
+  <settings>
+    <!-- Settings that are not per-tool -->
+    <sliceHeight text="Slice Height" units="mm">0.20</sliceHeight>
+  </settings>
+
+   <!-- Expose settings for the first tool -->
+   <tool name="Silicone" material="Silicone" scriptVariable="silicone">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.20</sliceHeight>
+       <pathSpeed text="Path Speed" units="mm/s">10</pathSpeed>
+       <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+       <depositionRate text="DepositionRate" units="mm/mm">0.0009</depositionRate>
+       <pushout text="Pushout" units="seconds">0.2</pushout>
+       <suckback text="Suckback" units="seconds">0.2</suckback>
+       <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <clearance text="Clearance" units="mm">2</clearance>
+       <pausePaths text="Pause after # Paths" units=" # of paths">300</pausePaths>
+       <pitch text="Pitch" units="?">0.000397</pitch>
+     </settings>
+   </tool>
+
+   <!-- Expose settings for the second tool -->
+   <tool name="Frosting" material="Frosting" isSupportMaterial="true" scriptVariable="frosting">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.25</sliceHeight>
+       <pathSpeed text="Path Speed" units="mm/s">30</pathSpeed>
+       <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+       <depositionRate text="DepositionRate" units="mm/mm">0.0009</depositionRate>
+       <pushout text="Pushout" units="seconds">0.5</pushout>
+       <suckback text="Suckback" units="seconds">0.5</suckback>
+       <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <clearance text="Clearance" units="mm">3</clearance>
+       <pausePaths text="Pause after # Paths" units=" # of paths">300</pausePaths>
+       <pitch text="Pitch" units="?">0.000397</pitch>
+     </settings>
+   </tool>
+
+  <printScript>
+  <![CDATA[
+
+progress.setSteps(silicone.meshes.length*2 + frosting.meshes.length*2 + 3);
+
+slicer.setSliceHeight(silicone.sliceHeight);
+pather.set("PathWidth", silicone.pathWidth);
+for (var i = 0; i < silicone.meshes.length; ++i) {
+  progress.log("Slicing Silicone Mesh");
+  slicer.doSlicing(silicone.meshes[i]);
+  progress.step();
+  progress.log("Pathing Silicone Mesh");
+  pather.doPathing(silicone.meshes[i]);
+  progress.step();
+}
+
+slicer.setSliceHeight(frosting.sliceHeight);
+pather.set("PathWidth", frosting.pathWidth);
+for (var i = 0; i < frosting.meshes.length; ++i) {
+progress.log("Slicing Frosting Mesh");
+  slicer.doSlicing(frosting.meshes[i]);
+  progress.step();
+  progress.log("Pathing Frosting Mesh");
+  pather.doPathing(frosting.meshes[i]);
+  progress.step();
+}
+
+var siliconeMaterialCalibration = {
+  pathSpeed: silicone.pathSpeed,
+  depositionRate: silicone.depositionRate,
+  pathWidth: silicone.pathWidth,
+  depositionRate: silicone.depositionRate,
+  pushout: silicone.pushout,
+  suckback: silicone.suckback,
+  suckbackDelay: silicone.suckbackDelay,
+  clearance: silicone.clearance,
+  pausePaths: silicone.pausePaths,
+  pitch: silicone.pitch
+};
+
+var frostingMaterialCalibration = {
+  pathSpeed: frosting.pathSpeed,
+  depositionRate: frosting.depositionRate,
+  pathWidth: frosting.pathWidth,
+  depositionRate: frosting.depositionRate,
+  pushout: frosting.pushout,
+  suckback: frosting.suckback,
+  suckbackDelay: frosting.suckbackDelay,
+  clearance: frosting.clearance,
+  pausePaths: frosting.pausePaths,
+  pitch: frosting.pitch
+};
+
+var fabWriter = fabFile.fabAtHomeModel2Writer();
+fabWriter.addMeshes("silicone", siliconeMaterialCalibration, silicone.meshes);
+progress.step();
+fabWriter.addMeshes("frosting", frostingMaterialCalibration, frosting.meshes);
+progress.step();
+
+fabWriter.sortBottomUp();
+fabWriter.print();
+
+progress.finish();
+
+  ]]>
+  </printScript>
+</toolScript>

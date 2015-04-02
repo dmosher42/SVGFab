@@ -1,0 +1,130 @@
+ <toolScript name="Green Taper, Cookie"
+             description="Tool:   10cc syringe of clear vCookie with a green taper tip"
+             printer="Fab@Home Model 2 Valve">
+
+  <settings>
+    <!-- Settings that are not per-tool -->
+    <printAcceleration text="Print Acceleration" units="mm/s^2">100</printAcceleration>
+  </settings>
+
+   <!-- Expose settings for the first tool -->
+   <tool name="Green Taper vCookie" material="vCookie" scriptVariable="vCookie">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.7</sliceHeight>
+       <!--Top speed in millimeters/second for this tool during execution of path.-->
+         <pathSpeed text="Path Speed" units="mm/s">30</pathSpeed>
+       <!--Width of the path in millimeters.-->
+         <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+       <!--(millimeters of plunger motion)/(millimeters tool travel) along deposition path.-->
+         <depositionRate text="DepositionRate" units="mm/mm">0.00</depositionRate>
+       <!--Seconds of early dispensing to start flow quickly.-->
+         <pushout text="Pushout" units="seconds">0.06</pushout>
+       <!--Seconds reverse plunger motion to stop flow quickly.-->
+         <suckback text="Suckback" units="seconds">0.06</suckback>
+       <!--Seconds to delay suckback by.-->
+         <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <!--Millimeters of clearance between tip and last layer when traversing.-->
+         <clearance text="Clearance" units="mm">10</clearance>
+       <!--Number of paths after which to trigger an automatic pause.-->
+         <pausePaths text="Pause after # Paths" units="# of paths">300</pausePaths>
+       <!--no comment-->
+         <pitch text="Pitch" units="?">0.000397</pitch>
+     </settings>
+   </tool>
+   <tool name="Green Taper Cocolate Cookie" material="Chocolate Cookie" scriptVariable="cCookie">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.7</sliceHeight>
+       <!--Top speed in millimeters/second for this tool during execution of path.-->
+       <pathSpeed text="Path Speed" units="mm/s">30</pathSpeed>
+       <!--Width of the path in millimeters.-->
+       <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+       <!--(millimeters of plunger motion)/(millimeters tool travel) along deposition path.-->
+       <depositionRate text="DepositionRate" units="mm/mm">0.00</depositionRate>
+       <!--Seconds of early dispensing to start flow quickly.-->
+       <pushout text="Pushout" units="seconds">0.06</pushout>
+       <!--Seconds reverse plunger motion to stop flow quickly.-->
+       <suckback text="Suckback" units="seconds">0.06</suckback>
+       <!--Seconds to delay suckback by.-->
+       <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <!--Millimeters of clearance between tip and last layer when traversing.-->
+       <clearance text="Clearance" units="mm">10</clearance>
+       <!--Number of paths after which to trigger an automatic pause.-->
+       <pausePaths text="Pause after # Paths" units="# of paths">300</pausePaths>
+       <!--no comment-->
+       <pitch text="Pitch" units="?">0.000397</pitch>
+     </settings>
+   </tool>
+
+  <printScript>
+  <![CDATA[
+
+progress.setSteps(vCookie.meshes.length*2 + cCookie.meshes.length*2+ 3);
+
+slicer.setSliceHeight(vCookie.sliceHeight);
+pather.set("PathWidth", vCookie.pathWidth);
+for (var i = 0; i < vCookie.meshes.length; ++i) {
+  progress.log("Slicing vCookie Mesh");
+  slicer.doSlicing(vCookie.meshes[i]);
+  progress.step();
+  progress.log("Pathing vCookie Mesh");
+  pather.doPathing(vCookie.meshes[i]);
+  progress.step();
+}
+
+slicer.setSliceHeight(cCookie.sliceHeight);
+pather.set("PathWidth", cCookie.pathWidth);
+for (var i = 0; i < cCookie.meshes.length; ++i) {
+  progress.log("Slicing cCookie Mesh");
+  slicer.doSlicing(cCookie.meshes[i]);
+  progress.step();
+  progress.log("Pathing cCookie Mesh");
+  pather.doPathing(cCookie.meshes[i]);
+  progress.step();
+}
+
+
+var vCookieMaterialCalibration = {
+  pathSpeed: vCookie.pathSpeed,
+  depositionRate: 0.0,
+  pathWidth: vCookie.pathWidth,
+  depositionRate: vCookie.depositionRate,
+  pushout: vCookie.pushout,
+  suckback: vCookie.suckback,
+  suckbackDelay: vCookie.suckbackDelay,
+  clearance: vCookie.clearance,
+  pausePaths: vCookie.pausePaths,
+  pitch: vCookie.pitch
+};
+
+var cCookieMaterialCalibration = {
+  pathSpeed: cCookie.pathSpeed,
+  depositionRate: 0.0,
+  pathWidth: cCookie.pathWidth,
+  depositionRate: cCookie.depositionRate,
+  pushout: cCookie.pushout,
+  suckback: cCookie.suckback,
+  suckbackDelay: cCookie.suckbackDelay,
+  clearance: cCookie.clearance,
+  pausePaths: cCookie.pausePaths,
+  pitch: cCookie.pitch
+};
+
+var fabWriter = fabFile.fabAtHomeModel2Writer();
+
+fabWriter.addMeshes("vCookie", vCookieMaterialCalibration, vCookie.meshes);
+progress.step();
+
+fabWriter.addMeshes("cCookie", cCookieMaterialCalibration, cCookie.meshes);
+progress.step();
+
+fabWriter.sortBottomUp();
+fabWriter.setPrintAcceleration(printAcceleration);
+
+progress.step();
+fabWriter.print();
+
+progress.finish();
+
+  ]]>
+  </printScript>
+</toolScript>

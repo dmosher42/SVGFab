@@ -1,0 +1,81 @@
+ <toolScript name="FoamCut"
+             description="Foam Cutting"
+             printer="Fab@Home Model 2 Foam Cutting tool">
+
+  <settings>
+    <!-- Settings that are not per-tool -->
+    <printAcceleration text="Print Acceleration" units="mm/s^2">10</printAcceleration>
+  </settings>
+
+   <!-- Expose settings for the first tool -->
+   <tool name="Green Taper Clear FoamCut" material="FoamCut" scriptVariable="foamcut">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.1</sliceHeight>
+       <!--Top speed in millimeters/second for this tool during execution of path.-->
+         <pathSpeed text="Path Speed" units="mm/s">5</pathSpeed>
+       <!--Width of the path in millimeters.-->
+         <pathWidth text="Path Width" units="mm">0.5</pathWidth>
+       <!--(millimeters of plunger motion)/(millimeters tool travel) along deposition path.-->
+         <depositionRate text="DepositionRate" units="mm/mm">0.0</depositionRate>
+       <!--Seconds of early dispensing to start flow quickly.-->
+         <pushout text="Pushout" units="seconds">0.0</pushout>
+       <!--Seconds reverse plunger motion to stop flow quickly.-->
+         <suckback text="Suckback" units="seconds">0.0</suckback>
+       <!--Seconds to delay suckback by.-->
+         <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <!--Millimeters of clearance between tip and last layer when traversing.-->
+         <clearance text="Clearance" units="mm">30</clearance>
+       <!--Number of paths after which to trigger an automatic pause.-->
+         <pausePaths text="Pause after # Paths" units="# of paths">300</pausePaths>
+       <!--no comment-->
+         <pitch text="Pitch" units="?">0.000397</pitch>
+     </settings>
+   </tool>
+
+  <printScript>
+  <![CDATA[
+
+progress.setSteps(foamcut.meshes.length*2 + 3);
+
+slicer.setSliceHeight(foamcut.sliceHeight);
+pather.set("PathWidth", foamcut.pathWidth);
+pather.set("density",0.25);
+for (var i = 0; i < foamcut.meshes.length; ++i) {
+  progress.log("Slicing FoamCut Mesh");
+  var slice_stack = slicer.doSlicing(foamcut.meshes[i]);
+  var slices = slice_stack.getSlices(0,1);
+  progress.step();
+  progress.log("Pathing FoamCut Mesh");
+  pather.doPathing(foamcut.meshes[i],slices);
+  progress.step();
+}
+
+var foamcutMaterialCalibration = {
+  pathSpeed: foamcut.pathSpeed,
+  depositionRate: foamcut.depositionRate,
+  pathWidth: foamcut.pathWidth,
+  pathHeight:foamcut.sliceHeight,
+  pushout: foamcut.pushout,
+  suckback: foamcut.suckback,
+  suckbackDelay: foamcut.suckbackDelay,
+  clearance: foamcut.clearance,
+  pausePaths: foamcut.pausePaths,
+  pitch: foamcut.pitch
+};
+
+var fabWriter = fabFile.fabAtHomeModel2Writer();
+
+fabWriter.addMeshes("foamcut", foamcutMaterialCalibration, foamcut.meshes);
+progress.step();
+
+//fabWriter.sortBottomUp();
+fabWriter.setPrintAcceleration(printAcceleration);
+
+progress.step();
+fabWriter.print();
+
+progress.finish();
+
+  ]]>
+  </printScript>
+</toolScript>

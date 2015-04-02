@@ -1,0 +1,79 @@
+ <toolScript name="Green Taper Alginate"
+             description="Algiante hydrogel with cross linker"
+             printer="Fab@Home Model 2">
+
+  <settings>
+    <!-- Settings that are not per-tool -->
+    <printAcceleration text="Print Acceleration" units="mm/s^2">100</printAcceleration>
+  </settings>
+
+   <!-- Expose settings for the first tool -->
+   <tool name="Algiante" material="Alginate" scriptVariable="alginate">
+     <settings>
+       <sliceHeight text="Slice Height" units="mm">0.71</sliceHeight>
+       <!--Top speed in millimeters/second for this tool during execution of path.-->
+         <pathSpeed text="Path Speed" units="mm/s">30</pathSpeed>
+       <!--Width of the path in millimeters.-->
+         <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+       <!--(millimeters of plunger motion)/(millimeters tool travel) along deposition path.-->
+         <depositionRate text="DepositionRate" units="mm/mm">0.0045</depositionRate>
+       <!--Seconds of early dispensing to start flow quickly.-->
+         <pushout text="Pushout" units="seconds">0.05</pushout>
+       <!--Seconds reverse plunger motion to stop flow quickly.-->
+         <suckback text="Suckback" units="seconds">0.05</suckback>
+       <!--Seconds to delay suckback by.-->
+         <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+       <!--Millimeters of clearance between tip and last layer when traversing.-->
+         <clearance text="Clearance" units="mm">2</clearance>
+       <!--Number of paths after which to trigger an automatic pause.-->
+         <pausePaths text="Pause after # Paths" units="# of paths">300</pausePaths>
+       <!--no comment-->
+         <pitch text="Pitch" units="?">0.000397</pitch>
+     </settings>
+   </tool>
+
+  <printScript>
+  <![CDATA[
+
+progress.setSteps(alginate.meshes.length*2 + 3);
+
+slicer.setSliceHeight(alginate.sliceHeight);
+pather.set("PathWidth", alginate.pathWidth);
+for (var i = 0; i < alginate.meshes.length; ++i) {
+  progress.log("Slicing Alginate Mesh");
+  slicer.doSlicing(alginate.meshes[i]);
+  progress.step();
+  progress.log("Pathing Alginate Mesh");
+  pather.doPathing(alginate.meshes[i]);
+  progress.step();
+}
+
+var alginateMaterialCalibration = {
+  pathSpeed: alginate.pathSpeed,
+  depositionRate: alginate.depositionRate,
+  pathWidth: alginate.pathWidth,
+  depositionRate: alginate.depositionRate,
+  pushout: alginate.pushout,
+  suckback: alginate.suckback,
+  suckbackDelay: alginate.suckbackDelay,
+  clearance: alginate.clearance,
+  pausePaths: alginate.pausePaths,
+  pitch: alginate.pitch
+};
+
+var fabWriter = fabFile.fabAtHomeModel2Writer();
+
+fabWriter.addMeshes("alginate", alginateMaterialCalibration, alginate.meshes);
+progress.step();
+
+fabWriter.sortBottomUp();
+fabWriter.setPrintAcceleration(printAcceleration);
+
+progress.step();
+fabWriter.print();
+
+progress.finish();
+
+  ]]>
+  </printScript>
+</toolScript>

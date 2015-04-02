@@ -1,0 +1,76 @@
+<toolScript name="Wood Milling" description="You'll need the dremel tool" printer="Fab@Home Model 2 Dremel">
+
+  <settings>
+    <!-- Settings that are not per-tool -->
+    <printAcceleration text="Print Acceleration" units="mm/s^2">100</printAcceleration>
+  </settings>
+
+  <!-- Expose settings for the first tool -->
+  <tool name="Wood Target" material="Wood Mill Target"  scriptVariable="target">
+    <settings>
+      <!-- this is a dumby slice hight -->
+      <sliceHeight text="Slice Height" units="mm">0.20</sliceHeight>
+    </settings>
+  </tool>
+
+  <!-- Expose settings for the second tool -->
+  <tool name="Wood" material="Wood" isSupportMaterial="true" scriptVariable="wood">
+    <settings>
+      <sliceHeight text="Slice Height" units="mm">0.10</sliceHeight>
+      <pathSpeed text="Path Speed" units="mm/s">30</pathSpeed>
+      <pathWidth text="Path Width" units="mm">0.8</pathWidth>
+      <clearance text="Clearance" units="mm">10</clearance>
+      <!-- Dummy values for FabInterpreter-->
+      <pausePaths text="Pause after # Paths" units=" # of paths">300</pausePaths>
+      <depositionRate text="DepositionRate" units="mm/mm">0.0</depositionRate>
+      <pushout text="Pushout" units="seconds">0</pushout>
+      <suckback text="Suckback" units="seconds">0</suckback>
+      <suckbackDelay text="Suckback Delay" units="seconds">0</suckbackDelay>
+      <pitch text="Pitch" units="?">0.0</pitch>
+    </settings>
+  </tool>
+
+  <printScript>
+    <![CDATA[
+
+progress.setSteps(wood.meshes.length*2 + 3);
+
+slicer.setSliceHeight(wood.sliceHeight);
+pather.set("PathWidth", wood.pathWidth);
+for (var i = 0; i < wood.meshes.length; ++i) {
+progress.log("Slicing wood Mesh");
+  slicer.doSlicing(wood.meshes[i]);
+  progress.step();
+  progress.log("Pathing wood Mesh");
+  pather.doPathing(wood.meshes[i]);
+  progress.step();
+}
+
+var woodMaterialCalibration = {
+  pathSpeed: wood.pathSpeed,
+  depositionRate: wood.depositionRate,
+  pathWidth: wood.pathWidth,
+  depositionRate: wood.depositionRate,
+  pushout: wood.pushout,
+  suckback: wood.suckback,
+  suckbackDelay: wood.suckbackDelay,
+  clearance: wood.clearance,
+  pausePaths: wood.pausePaths,
+  pitch: wood.pitch
+};
+
+
+
+
+var fabWriter = fabFile.fabAtHomeModel2Writer();
+fabWriter.addMeshes("wood", woodMaterialCalibration, wood.meshes);
+progress.step();
+
+fabWriter.sortTopDown();
+fabWriter.print();
+
+progress.finish();
+
+  ]]>
+  </printScript>
+</toolScript>
