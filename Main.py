@@ -1,4 +1,13 @@
 __author__ = 'dee'
+#References:
+'''
+https://docs.python.org/2/library/xml.etree.elementtree.html
+https://docs.python.org/2/tutorial/controlflow.html
+http://wiki.inkscape.org/wiki/index.php/Inkscape_SVG_vs._plain_SVG
+https://docs.python.org/2/library/string.html
+http://www.tutorialspoint.com/python/python_lists.htm
+https://docs.python.org/2/tutorial/modules.html
+'''
 import xml.etree.cElementTree as ET
 #import string as ST
 tree = ET.parse('test.svg')
@@ -26,8 +35,10 @@ for path in root.findall('svg:path',ns):
     #points.append()
 print(paths)
 
-print("=======GET SVG REC:======")
+print("=======GET SVG RECTS:======")
 
+
+print("=======GET MAT CONFIG:======")
 
 
 print("=======MAKE FAB(ULOUS):======")
