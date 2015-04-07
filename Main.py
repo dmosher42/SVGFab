@@ -8,14 +8,21 @@ https://docs.python.org/2/library/string.html
 http://www.tutorialspoint.com/python/python_lists.htm
 https://docs.python.org/2/tutorial/modules.html
 '''
-import xml.etree.cElementTree as ET
+
+filelocation = 'test.svg'
+
+import xml.etree.ElementTree as ET
+import sys
+#import xml.etree.ElementTree as ET2
 #import string as ST
-tree = ET.parse('test.svg')
+tree = ET.parse(filelocation)
 root = tree.getroot()
 ns = {'svg':'http://www.w3.org/2000/svg','is':'http://www.inkscape.org/namespaces/inkscape'}
 
-tree2 = ET.parse('test2.fab')
+#tree2 = ET.parse('test2.fab')
 
+
+print(sys.version)
 
 paths = []
 points = []
@@ -33,15 +40,22 @@ for path in root.findall('svg:path',ns):
         points[i] = str.split(points[i],",")
     paths.append(points)
     #points.append()
-print(paths)
 
 print("=======GET SVG RECTS:======")
-
+#not really needed right now
 
 print("=======GET MAT CONFIG:======")
-
+#not really needed right now. Just use a single, hardcoded one
 
 print("=======MAKE FAB(ULOUS):======")
-root = tree2.getroot()
-for child in root:
-    print child.tag
+#root = tree2.getroot()
+
+builder=ET.TreeBuilder()
+builder.start('hi', {})
+builder.data("some text")
+builder.end("hi")
+
+root2 = builder.close()
+print(root2.tag)
+print ET.tostring(root2)
+
