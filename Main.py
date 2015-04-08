@@ -21,6 +21,11 @@ ns = {'svg':'http://www.w3.org/2000/svg','is':'http://www.inkscape.org/namespace
 
 #tree2 = ET.parse('test2.fab')
 
+convunit = .264583
+xoffset = 100
+yoffset = 10
+pointz = 0.390000
+dplaces = '%.6f'
 
 print(sys.version)
 
@@ -43,19 +48,70 @@ for path in root.findall('svg:path',ns):
 
 print("=======GET SVG RECTS:======")
 #not really needed right now
-
 print("=======GET MAT CONFIG:======")
 #not really needed right now. Just use a single, hardcoded one
 
 print("=======MAKE FAB(ULOUS):======")
 #root = tree2.getroot()
 
-builder=ET.TreeBuilder()
-builder.start('hi', {})
-builder.data("some text")
-builder.end("hi")
 
-root2 = builder.close()
-print(root2.tag)
-print ET.tostring(root2)
+
+print(points)
+
+#REMINDER: Change to:
+#a = ET.Element('a')
+#b = ET.SubElement(a, 'b')
+
+builder=ET.TreeBuilder()
+fabhpr = ET.fromstring("<fabAtHomePrinter><printAcceleration>100</printAcceleration><materialCalibration><clearance>2</clearance><depositionRate>0.005</depositionRate><name>epoxy</name><pathSpeed>5</pathSpeed><pathWidth>1</pathWidth><pausePaths>30</pausePaths><pitch>0.000397</pitch><pushout>0.3</pushout><suckback>0.25</suckback><suckbackDelay>0</suckbackDelay></materialCalibration><materialCalibration><clearance>1</clearance><depositionRate>0.00085</depositionRate><name>silicone</name><pathSpeed>9</pathSpeed><pathWidth>0.4</pathWidth><pausePaths>300</pausePaths><pitch>0.000397</pitch><pushout>0.11</pushout><suckback>0.11</suckback><suckbackDelay>0</suckbackDelay></materialCalibration></fabAtHomePrinter>")
+
+for j in range(len(paths)):
+    print(paths[j])
+    builder.start('path', {})
+    builder.end("path")
+    pathr = builder.close()
+
+    pathr.insert(0,ET.fromstring("<materialCalibrationName>epoxy</materialCalibrationName>"))
+
+    for i in range(len(paths[j])):
+        print(paths[j][i])
+        builder.start('point', {})
+        builder.end("point")
+        pointr = builder.close()
+
+        builder.start('x', {})
+        builder.data(str(float(paths[j][i][0])*convunit+xoffset))
+        builder.end("x")
+        xr = builder.close()
+
+        builder.start('y', {})
+        builder.data(str(float(paths[j][i][1])*convunit++yoffset))
+        builder.end("y")
+        yr = builder.close()
+
+        builder.start('z', {})
+        builder.data(str(dplaces%pointz))
+        builder.end('z')
+        zr = builder.close()
+
+        pointr.insert(0,xr)
+        pointr.insert(1,yr)
+        pointr.insert(2,zr)
+        pathr.insert(j+i+1,pointr)
+    fabhpr.insert(j+3,pathr)
+
+
+print("\n\nDEBUGTIME")
+
+for der in fabhpr:
+    print(der.tag)
+print ET.tostring(fabhpr)
+
+print(pathr.tag)
+print ET.tostring(pathr)
+
+fulltree=ET.ElementTree(fabhpr)
+#The tree is initialized with the contents of the XML file if given.
+
+fulltree.write("testout.xml", "us-ascii", None, None, method="xml")
 
