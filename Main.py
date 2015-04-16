@@ -111,9 +111,7 @@ for j in range(len(paths)):
     builder.start('path', {})
     builder.end("path")
     pathr = builder.close()
-
     pathr.insert(0,ET.fromstring("<materialCalibrationName>epoxy</materialCalibrationName>"))
-
     for i in range(len(paths[j])):
         print(paths[j][i])
         builder.start('point', {})
@@ -142,22 +140,13 @@ for j in range(len(paths)):
     fabhpr.insert(j+3,pathr)
     indent(pathr)
 
+indent(fabhpr)
 
-
-print("\n\nDEBUGTIME")
-
-for der in fabhpr:
-    print(der.tag)
-print ET.tostring(fabhpr)
-
-print(pathr.tag)
-indent(pathr)
-
-print ET.tostring(pathr)
+#print ET.tostring(pathr)
 fulltree=ET.ElementTree(fabhpr)
 #The tree is initialized with the contents of the XML file if given.
 
 
 fulltree.write("page.fab",
-           xml_declaration=True,encoding='utf-8',
+           xml_declaration=True,encoding="UTF-8",
            method="xml")
